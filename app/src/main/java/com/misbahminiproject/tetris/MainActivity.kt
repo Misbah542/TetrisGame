@@ -1,17 +1,20 @@
 package com.misbahminiproject.tetris
 
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.*
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.misbahminiproject.tetris.logic.Action
 import com.misbahminiproject.tetris.logic.Direction
@@ -23,8 +26,6 @@ import com.misbahminiproject.tetris.ui.theme.GameBody
 import com.misbahminiproject.tetris.ui.theme.GameScreen
 import com.misbahminiproject.tetris.ui.theme.PreviewGamescreen
 import com.misbahminiproject.tetris.ui.theme.combinedClickable
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,21 +35,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ComposetetrisTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colorScheme.background) {
-
                     val viewModel = viewModel<GameViewModel>()
-                    val viewState = viewModel.viewState.value
-
-                    LaunchedEffect(key1 = Unit) {
-                        while (isActive) {
-                            delay(650L - 55 * (viewState.level - 1))
-                            viewModel.dispatch(Action.GameTick)
-                        }
-                    }
+                    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
                     val lifecycleOwner = LocalLifecycleOwner.current
-                    DisposableEffect(key1 = Unit) {
+                    DisposableEffect(lifecycleOwner) {
                         val observer = object : DefaultLifecycleObserver {
                             override fun onResume(owner: LifecycleOwner) {
                                 viewModel.dispatch(Action.Resume)
@@ -64,7 +56,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-
                     GameBody(combinedClickable(
                         onMove = { direction: Direction ->
                             if (direction == Direction.Up) viewModel.dispatch(Action.Drop)
@@ -77,7 +68,7 @@ class MainActivity : ComponentActivity() {
                             viewModel.dispatch(Action.Reset)
                         },
                         onPause = {
-                            if (viewModel.viewState.value.isRunning) {
+                            if (viewState.isRunning) {
                                 viewModel.dispatch(Action.Pause)
                             } else {
                                 viewModel.dispatch(Action.Resume)
@@ -87,22 +78,18 @@ class MainActivity : ComponentActivity() {
                             viewModel.dispatch(Action.Mute)
                         }
                     )) {
-                        GameScreen(
-                            Modifier.fillMaxSize()
-                        )
+                        GameScreen(Modifier.fillMaxSize())
                     }
                 }
             }
         }
     }
 
-
     override fun onDestroy() {
         super.onDestroy()
         SoundUtil.release()
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

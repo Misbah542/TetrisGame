@@ -1,20 +1,19 @@
 package com.misbahminiproject.tetris.logic
 
-
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
-import android.view.View
-import android.view.WindowManager
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.misbahminiproject.tetris.R
-
 
 fun Offset(x: Int, y: Int) = androidx.compose.ui.geometry.Offset(x.toFloat(), y.toFloat())
 
@@ -28,7 +27,6 @@ fun Direction.toOffset() = when (this) {
     Direction.Right -> 1 to 0
     Direction.Down -> 0 to 1
 }
-
 
 val LedFontFamily = FontFamily(
     Font(R.font.unidream_led, FontWeight.Light),
@@ -49,24 +47,19 @@ fun calculateScore(lines: Int) = when (lines) {
     else -> 0
 }
 
-
 object StatusBarUtil {
-
     fun transparentStatusBar(activity: Activity) {
-        with(activity) {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            val option = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            val vis = window.decorView.systemUiVisibility
-            window.decorView.systemUiVisibility = option or vis
-            window.statusBarColor = Color.TRANSPARENT
-        }
+        WindowCompat.setDecorFitsSystemWindows(activity.window, false)
+        activity.window.statusBarColor = Color.TRANSPARENT
+        activity.window.navigationBarColor = Color.TRANSPARENT
+
+        val controller = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
+        controller.isAppearanceLightStatusBars = true
     }
 }
 
 @SuppressLint("StaticFieldLeak")
 object SoundUtil {
-
     private var _context: Context? = null
     private val sp: SoundPool by lazy {
         SoundPool.Builder().setMaxStreams(4).setMaxStreams(AudioManager.STREAM_MUSIC).build()
@@ -85,22 +78,27 @@ object SoundUtil {
         sp.release()
     }
 
-
     fun play(isMute: Boolean, sound: SoundType) {
         if (!isMute) {
-            sp.play(requireNotNull(_map[sound]), 1f, 1f, 0, 0, 1f)
+            _map[sound]?.let { id ->
+                sp.play(id, 1f, 1f, 0, 0, 1f)
+            }
         }
     }
-
 }
 
 sealed class SoundType(val res: Int) {
-    object Move : SoundType(R.raw.move)
-    object Rotate : SoundType(R.raw.rotate)
-    object Start : SoundType(R.raw.start)
-    object Drop : SoundType(R.raw.drop)
-    object Clean : SoundType(R.raw.clean)
+    data object Move : SoundType(R.raw.move)
+    data object Rotate : SoundType(R.raw.rotate)
+    data object Start : SoundType(R.raw.start)
+    data object Drop : SoundType(R.raw.drop)
+    data object Clean : SoundType(R.raw.clean)
 }
 
-val Sounds =
-    listOf(SoundType.Move, SoundType.Rotate, SoundType.Start, SoundType.Drop, SoundType.Clean)
+val Sounds = listOf(
+    SoundType.Move,
+    SoundType.Rotate,
+    SoundType.Start,
+    SoundType.Drop,
+    SoundType.Clean
+)

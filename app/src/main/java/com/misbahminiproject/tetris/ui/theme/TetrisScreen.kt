@@ -1,11 +1,5 @@
 package com.misbahminiproject.tetris.ui.theme
 
-import com.misbahminiproject.tetris.R
-import com.misbahminiproject.tetris.logic.Brick
-import com.misbahminiproject.tetris.logic.GameStatus
-import com.misbahminiproject.tetris.logic.GameViewModel
-import com.misbahminiproject.tetris.logic.TetrisSpirits
-import com.misbahminiproject.tetris.logic.SpiritType
 import android.graphics.Paint
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -46,17 +40,21 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.misbahminiproject.tetris.R
+import com.misbahminiproject.tetris.logic.Brick
+import com.misbahminiproject.tetris.logic.GameStatus
+import com.misbahminiproject.tetris.logic.GameViewModel
 import com.misbahminiproject.tetris.logic.NextMatrix
-import kotlinx.coroutines.ObsoleteCoroutinesApi
+import com.misbahminiproject.tetris.logic.SpiritType
+import com.misbahminiproject.tetris.logic.TetrisSpirits
 import kotlin.math.min
 
-@ObsoleteCoroutinesApi
 @Composable
 fun GameScreen(modifier: Modifier = Modifier) {
-
     val viewModel = viewModel<GameViewModel>()
-    val viewState = viewModel.viewState.value
+    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
     Box(
         modifier
@@ -65,7 +63,6 @@ fun GameScreen(modifier: Modifier = Modifier) {
             .background(ScreenBackground)
             .padding(10.dp)
     ) {
-
         val animateValue by rememberInfiniteTransition(label = "").animateFloat(
             initialValue = 0f, targetValue = 0.7f,
             animationSpec = infiniteRepeatable(
@@ -78,9 +75,7 @@ fun GameScreen(modifier: Modifier = Modifier) {
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-
         ) {
-
             val brickSize = min(
                 size.width / viewState.matrix.first,
                 size.height / viewState.matrix.second
@@ -91,7 +86,6 @@ fun GameScreen(modifier: Modifier = Modifier) {
             drawBricks(viewState.bricks, brickSize, viewState.matrix)
             drawSpirit(viewState.tetrisSpirits, brickSize, viewState.matrix)
             drawText(viewState.gameStatus, brickSize, viewState.matrix, animateValue)
-
         }
 
         GameScoreboard(
@@ -107,7 +101,6 @@ fun GameScreen(modifier: Modifier = Modifier) {
         )
     }
 }
-
 
 @Composable
 fun GameScoreboard(
@@ -176,12 +169,10 @@ fun GameScoreboard(
                 Spacer(modifier = Modifier.weight(1f))
 
                 LedClock()
-
             }
         }
     }
 }
-
 
 private fun DrawScope.drawText(
     gameStatus: GameStatus,
@@ -189,13 +180,11 @@ private fun DrawScope.drawText(
     matrix: Pair<Int, Int>,
     alpha: Float,
 ) {
-
     val center = Offset(
         brickSize * matrix.first / 2,
         brickSize * matrix.second / 2
     )
     val drawText = { text: String, size: Float ->
-
         drawIntoCanvas {
             it.nativeCanvas.drawText(
                 text,
@@ -209,7 +198,6 @@ private fun DrawScope.drawText(
                     strokeWidth = size / 12
                 }
             )
-
         }
     }
     if (gameStatus == GameStatus.Onboard) {
@@ -232,7 +220,6 @@ private fun DrawScope.drawMatrix(brickSize: Float, matrix: Pair<Int, Int>) {
 }
 
 private fun DrawScope.drawMatrixBorder(brickSize: Float, matrix: Pair<Int, Int>) {
-
     val gap = matrix.first * brickSize * 0.05f
     drawRect(
         Color.Black,
@@ -246,7 +233,6 @@ private fun DrawScope.drawMatrixBorder(brickSize: Float, matrix: Pair<Int, Int>)
         ),
         style = Stroke(1.dp.toPx())
     )
-
 }
 
 private fun DrawScope.drawBricks(brick: List<Brick>, brickSize: Float, matrix: Pair<Int, Int>) {
@@ -282,7 +268,6 @@ private fun DrawScope.drawBrick(
     offset: Offset,
     color: Color
 ) {
-
     val actualLocation = Offset(
         offset.x * brickSize,
         offset.y * brickSize
@@ -306,9 +291,7 @@ private fun DrawScope.drawBrick(
         actualLocation + Offset(innerOffset, innerOffset),
         size = Size(innerSize, innerSize)
     )
-
 }
-
 
 @Preview
 @Composable
@@ -317,7 +300,6 @@ fun PreviewGamescreen(
         .width(260.dp)
         .height(300.dp)
 ) {
-
     Box(
         modifier
             .background(Color.Black)
@@ -325,13 +307,11 @@ fun PreviewGamescreen(
             .background(ScreenBackground)
             .padding(10.dp)
     ) {
-
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
                 .background(ScreenBackground)
         ) {
-
             val brickSize = min(
                 size.width / 12,
                 size.height / 24
@@ -347,10 +327,7 @@ fun PreviewGamescreen(
             score = 1204,
             line = 12
         )
-
     }
-
-
 }
 
 @Preview
@@ -368,7 +345,6 @@ fun PreviewSpiritType() {
                     .weight(1f)
                     .fillMaxHeight()
                     .padding(5.dp)
-
             ) {
                 drawBricks(
                     Brick.of(
@@ -380,7 +356,5 @@ fun PreviewSpiritType() {
                 )
             }
         }
-
     }
-
 }
