@@ -31,10 +31,6 @@ a coroutine game loop.
   </tr>
 </table>
 
-> These images are rendered directly from the Compose UI code — same colours, geometry, LED font and
-> piece logic — by [`docs/tools/render_ui.py`](docs/tools/render_ui.py), so they stay accurate
-> without a device in the loop. To replace them with real device captures:
-> `adb exec-out screencap -p > docs/screenshots/02-gameplay.png`.
 
 ---
 
